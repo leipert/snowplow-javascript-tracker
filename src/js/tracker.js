@@ -548,7 +548,6 @@
 		 * Send request
 		 */
 		function sendRequest(request, delay) {
-			console.log('sendRequest')
 			var now = new Date();
 
 			// Set to true if Opt-out cookie is defined
