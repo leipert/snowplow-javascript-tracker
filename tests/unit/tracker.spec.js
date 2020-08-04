@@ -74,7 +74,7 @@ describe('Activity tracker behaviour', () => {
     // window for page ping ticks
 
     expect(callbacks).toBe(3)
-    expect(F.size(getPPEvents(outQueues))).toBe(2)
+    expect(F.size(getPPEvents(outQueues))).toBe(1)
   })
 
   it('maintains current static context behaviour', () => {
@@ -343,7 +343,7 @@ describe('Activity tracker behaviour', () => {
 
     const pps = getPPEvents(outQueues)
 
-    expect(F.size(pps)).toBe(5)
+    expect(F.size(pps)).toBe(3)
 
     const pph = F.head(pps)
     const ppl = F.last(pps)

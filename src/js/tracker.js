@@ -1635,50 +1635,32 @@
 						//Clear page ping heartbeat on new page view
 						clearInterval(config.activityInterval);
 
-						activityInterval(config, finalizeContexts(context, contextCallback));
+						config.activityInterval = activityInterval({
+							...config,
+							configLastActivityTime: lastActivityTime,
+							context: finalizeContexts(context, contextCallback)
+						});
 					}
 				}
 			}
 		}
 
-		function activityInterval(configuration, context) {
-			const { configMinimumVisitLength, configHeartBeatTimer, callback } = configuration;
-
-			const executePagePing = (callback, context) => {
-				refreshUrl()
-				callback({ context, pageViewId: getPageViewId(), minXOffset, minYOffset, maxXOffset, maxYOffset })
-				resetMaxScrolls()
-			}
-
-			const timeout = () => {
-				var now = new Date()
+		function activityInterval({ configHeartBeatTimer, configMinimumVisitLength, configLastActivityTime, callback, context }) {
+			return setInterval(function heartBeat() {
+				var now = new Date();
 
 				// There was activity during the heart beat period;
 				// on average, this is going to overstate the visitDuration by configHeartBeatTimer/2
-				if (lastActivityTime + configMinimumVisitLength > now.getTime()) {
-					executePagePing(callback, context)
+				if ((lastActivityTime + configHeartBeatTimer) > now.getTime()) {
+					// Send ping if minimum visit time has elapsed
+					if (configLastActivityTime + configMinimumVisitLength < now.getTime()) {
+						refreshUrl();
+						callback({ context, pageViewId: getPageViewId(), minXOffset, minYOffset, maxXOffset, maxYOffset });
+						resetMaxScrolls();
+					}
 				}
-
-				configuration.activityInterval = setInterval(heartbeat, configHeartBeatTimer)
-			}
-
-			const heartbeat = () => {
-				var now = new Date()
-
-				// There was activity during the heart beat period;
-				// on average, this is going to overstate the visitDuration by configHeartBeatTimer/2
-				if (lastActivityTime + configHeartBeatTimer > now.getTime()) {
-					executePagePing(callback, context)
-				}
-			}
-
-			if (configMinimumVisitLength != 0) {
-				configuration.activityInterval = setTimeout(timeout, configMinimumVisitLength)
-			} else {
-				configuration.activityInterval = setInterval(heartbeat, configHeartBeatTimer)
-			}
+			}, configHeartBeatTimer);
 		}
-
 		/**
 		 * Configure the activity tracking and
 		 * ensures good values for min visit and heartbeat
