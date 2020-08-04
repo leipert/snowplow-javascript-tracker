@@ -1644,7 +1644,7 @@
 		function activityInterval(configuration, context) {
 			const { configMinimumVisitLength, configHeartBeatTimer, callback } = configuration;
 
-			const executePagePing = () => {
+			const executePagePing = (callback, context) => {
 				refreshUrl()
 				callback({ context, pageViewId: getPageViewId(), minXOffset, minYOffset, maxXOffset, maxYOffset })
 				resetMaxScrolls()
