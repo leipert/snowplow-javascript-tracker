@@ -59,14 +59,6 @@
 		return Math.floor((date - new Date(date.getFullYear(), 0, 0)) / 1000 / 60 / 60 / 24);
 	}
 
-	function dateStr(date) {
-		const options = {
-			year: 'numeric',
-			month: 'numeric',
-			day: 'numeric',
-		};
-		return date.toLocaleString('en-uk', options);
-	}
 	/**
 	 * Snowplow Tracker class
 	 *
@@ -400,26 +392,25 @@
 
 			uaClientHints = null;
 
-    console.log("at", anonymousTracking, "ast", anonymousSessionTracking)
-			if (autoContexts.clientHints) {
-				if (navigatorAlias.userAgentData) {
-					uaClientHints = {
-						isMobile: navigatorAlias.userAgentData.mobile,
-						brands: navigatorAlias.userAgentData.brands
-					};
-					if (autoContexts.clientHints.includeHighEntropy && navigatorAlias.userAgentData.getHighEntropyValues) {
-						navigatorAlias.userAgentData.getHighEntropyValues([
-							'platform',	'platformVersion', 'architecture', 'model', 'uaFullVersion'
-						]).then(res => {
-							uaClientHints.architecture = res.architecture;
-							uaClientHints.model = res.model;
-							uaClientHints.platform = res.platform;
-							uaClientHints.uaFullVersion = res.uaFullVersion;
-							uaClientHints.platformVersion = res.platformVersion;
-						});
-					}
+		if (autoContexts.clientHints) {
+			if (navigatorAlias.userAgentData) {
+				uaClientHints = {
+					isMobile: navigatorAlias.userAgentData.mobile,
+					brands: navigatorAlias.userAgentData.brands
+				};
+				if (autoContexts.clientHints.includeHighEntropy && navigatorAlias.userAgentData.getHighEntropyValues) {
+					navigatorAlias.userAgentData.getHighEntropyValues([
+						'platform',	'platformVersion', 'architecture', 'model', 'uaFullVersion'
+					]).then(res => {
+						uaClientHints.architecture = res.architecture;
+						uaClientHints.model = res.model;
+						uaClientHints.platform = res.platform;
+						uaClientHints.uaFullVersion = res.uaFullVersion;
+						uaClientHints.platformVersion = res.platformVersion;
+					});
 				}
 			}
+		}
 
 		let skippedBrowserFeatures = argmap.skippedBrowserFeatures || [];
 
@@ -623,7 +614,12 @@
 		 */
 		const hashedCookie = (cookieName, siteId, salt) => {
 			const now = new Date();
-			const rnd = salt ? salt : dateStr(now).repeat(3);
+			const dateString = date.toLocaleString('en-GB', {
+				year: 'numeric',
+				month: 'numeric',
+				day: 'numeric',
+			});
+			const rnd = salt ? salt : `${dateString}${dateString}${dateString}`;
 			const ddd = dayOfTheYear(now);
 			const hostname = window.location.hostname;
 			const ua = navigator.userAgent;
