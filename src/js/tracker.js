@@ -142,18 +142,6 @@
 			publicTask: 'public_task',
 			legitimateInterests: 'legitimate_interests'});
 
-		const isEmpty = value => {
-			const isObject = val => typeof val === 'object';
-			const isEmptyObj = (obj) => {
-				for(var key in obj) {
-					if(obj.hasOwnProperty(key))
-						return false;
-				}
-				return true;
-			};
-			return isObject(value) && isEmptyObj(value);
-		}
-
 		var
 			// Tracker core
 			core = coreConstructor(true, function(payload) {
@@ -179,6 +167,7 @@
 			documentAlias = document,
 			windowAlias = window,
 			navigatorAlias = navigator,
+			screenAlias = screen,
 
 			// Current URL and Referrer URL
 			locationArray = proxies.fixupUrl(documentAlias.domain, windowAlias.location.href, helpers.getReferrer()),
@@ -272,24 +261,22 @@
 			// This forces the tracker to be HTTP even if the page is secure
 			forceUnsecureTracker = !forceSecureTracker && argmap.hasOwnProperty('forceUnsecureTracker') ? (argmap.forceUnsecureTracker === true) : false,
 
-			// Sets tracker to work in anonymous mode without accessing client storage
-			anonymousTracking = argmap.hasOwnProperty("anonymousTracking") && argmap.anonymousTracking !== false && !isEmpty(argmap.anonymousTracking),
-
 			// Allows tracking user session using localStorage salt, can only be used with anonymousTracking
-			anonymousSessionTracking = argmap.hasOwnProperty("anonymousTracking") && argmap.anonymousTracking.hasOwnProperty("withSessionTracking") && argmap.anonymousTracking.withSessionTracking !== false,
+			anonymousSessionTracking = argmap.hasOwnProperty('anonymousTracking') && argmap.anonymousTracking.hasOwnProperty('withSessionTracking') ? (argmap.anonymousTracking.withSessionTracking === true) : false,
+
+			// Sets tracker to work in anonymous mode without accessing client storage
+			anonymousTracking = anonymousSessionTracking || (argmap.hasOwnProperty('anonymousTracking') ? (argmap.anonymousTracking === true) : false),
 
 			// Whether to use localStorage to store events between sessions while offline
-			useLocalStorage = argmap.hasOwnProperty('useLocalStorage') ? (
-				helpers.warn('argmap.useLocalStorage is deprecated. ' +
-					'Use argmap.stateStorageStrategy instead.'),
-				argmap.useLocalStorage
-			) : true,
+			useLocalStorage = argmap.hasOwnProperty('useLocalStorage') 
+				? (helpers.warn('argmap.useLocalStorage is deprecated. Use argmap.stateStorageStrategy instead.'), argmap.useLocalStorage)
+				: true,
 
 			// Whether to use cookies
 			configUseCookies = anonymousTracking
 				? false
 				: argmap.hasOwnProperty('useCookies')
-					? (helpers.warn('argmap.useCookies is deprecated. Use argmap.stateStorageStrategy instead.'),	argmap.useCookies)
+					? (helpers.warn('argmap.useCookies is deprecated. Use argmap.stateStorageStrategy instead.'), argmap.useCookies)
 					: true,
 
 			// Strategy defining how to store the state: cookie, localStorage or none
@@ -614,20 +601,20 @@
 		 */
 		const hashedCookie = (cookieName, siteId, salt) => {
 			const now = new Date();
-			const dateString = date.toLocaleString('en-GB', {
+			const dateString = now.toLocaleString('en-GB', {
 				year: 'numeric',
 				month: 'numeric',
 				day: 'numeric',
 			});
 			const rnd = salt ? salt : `${dateString}${dateString}${dateString}`;
 			const ddd = dayOfTheYear(now);
-			const hostname = window.location.hostname;
-			const ua = navigator.userAgent;
+			const hostname = windowAlias.location.hostname;
+			const ua = navigatorAlias.userAgent;
 			const size =
-				screen.height * window.devicePixelRatio +
-				screen.width * window.devicePixelRatio +
-				screen.colorDepth +
-				screen.pixelDepth;
+				screenAlias.height * windowAlias.devicePixelRatio +
+				screenAlias.width * windowAlias.devicePixelRatio +
+				screenAlias.colorDepth +
+				screenAlias.pixelDepth;
 
 			const signature = (...args) => `ann${hash(args.join(','))}`;
 			const args = [
