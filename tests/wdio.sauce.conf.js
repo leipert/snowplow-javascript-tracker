@@ -16,10 +16,10 @@ exports.config = {
       browserName: 'firefox',
       platform: 'macOS 10.14',
     },
-    // {
-    //   browserName: 'chrome',
-    //   platform: 'Windows 10',
-    // },
+    {
+      browserName: 'chrome',
+      platform: 'Windows 10',
+    },
     // {
     //   browserName: 'chrome',
     //   platform: 'macOS 10.14',
